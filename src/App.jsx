@@ -72,7 +72,7 @@ function App() {
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
-    const systemMessage = {
+    let systemMessage = {
       role: "system",
       content: "You are Jironaut, a Jira co-pilot. You ONLY help with writing, scoring, and improving Jira tickets. You never answer unrelated questions. Always respond in a structured way: either as a draft Jira ticket or as a scoring report."
     };
@@ -94,36 +94,20 @@ Rules:
 `;
       cleanedInput = cleanedInput.slice(6).trim();
     } else if (cleanedInput.toLowerCase().startsWith("score:")) {
-      modePrompt = `🧠 Jironaut Prompt: Feature Review (Weighted, Percentage-Based)
-You are a ticket quality reviewer. Please evaluate a Jira feature using the rubric below.
-After this prompt, I will provide the ticket title and description.
-Please return:
-- A score breakdown for each criterion (out of its max score).
-- A total percentage score (out of 100).
-- A badge based on the score.
-- Basic feedback: one positive note and one area for improvement.
-- Ask whether the user would like any section or the whole ticket rewritten to incorporate your feedback.
-
-🎯 Scoring Rubric for Features (Total = 100 points)
-
-Criterion | Max Score | Description
-Title clarity | 10 | Is the title clear, concise, and goal-oriented?
-Description completeness | 15 | Does the feature clearly describe what is being proposed and why?
-Benefit Hypothesis clarity | 20 | Is the intended value or outcome clearly articulated, including who benefits and how?
-Leading Indicators | 15 | Are measurable signals of success or progress defined and relevant?
-Strategic alignment | 10 | Does the feature align with team or org-level goals, OKRs, or initiatives?
-Risk/impact (including legal) | 10 | Are wider implications, risks, or legal concerns considered?
-Dependencies | 10 | Are any technical, delivery, or sequencing dependencies identified?
-Scope clarity | 10 | Is the scope of the feature well-bounded and distinct from implementation details?
-
-🏅 Badge System (Features)
-Visionary Thinker 🌟: Benefit Hypothesis + Strategic Alignment + Leading Indicators ≥ 40/45
-Feature Architect 🧠: Total score ≥ 85%
-Clarity Champion 🥇: Title + Description + Scope ≥ 30/35
-Risk Wrangler ⚖️: Risk + Dependencies ≥ 15/20
-
-Please wait for the ticket title and description.
+      systemMessage.content += `
+You are Jironaut, a Jira ticket reviewer. 
+Score tickets against 8 criteria (total 100 points):
+- Title clarity (10), Description completeness (15), Benefit Hypothesis (20), Leading Indicators (15),
+  Strategic alignment (10), Risk/Impact (10), Dependencies (10), Scope clarity (10).
+Return JSON with: individual scores, total %, one badge, one positive note, one area to improve, 
+and ask if user wants rewrite.
+Badges:
+- Visionary Thinker 🌟: Benefit+Alignment+Indicators ≥ 40/45
+- Feature Architect 🧠: Total ≥ 85%
+- Clarity Champion 🥇: Title+Description+Scope ≥ 30/35
+- Risk Wrangler ⚖️: Risk+Dependencies ≥ 15/20
 `;
+      modePrompt = "Evaluate the following Jira ticket:";
       cleanedInput = cleanedInput.slice(6).trim();
     } else {
       modePrompt = "Only Jira-related drafting and scoring tasks are supported.";
